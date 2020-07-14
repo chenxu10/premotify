@@ -8,7 +8,7 @@ ENV = 'dev'
 
 if ENV == 'dev':
     app.debug = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:@12#311Bb@localhost/'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:@12#311Bb@localhost/lexus'
 else:
     app.debug = False
     app.config['SQLALCHEMY_DATABASE_URI'] = ''
@@ -31,6 +31,10 @@ class Feedback(db.Model):
         self.rating = rating
         self.comments = comments
 
+    
+
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -46,7 +50,13 @@ def submit():
     #print(customer, dealer, rating, comments)
         if customer == '' or dealer == '':
             return render_template('index.html',message="Please finish the content")
-        return render_template('success.html')
+        filteredcustomer = db.session.query(Feedback).filter(Feedback.customer==customer)
+        if filteredcustomer.count() == 0:
+            data = Feedback(customer, dealer, rating, comments)
+            db.session.add(data)
+            db.session.commit()
+            return render_template('success.html')  
+        return render_template('index.html', message="You have already submitted feedback")
 
 if __name__ == "__main__":
     app.run()
